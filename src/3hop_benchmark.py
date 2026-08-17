@@ -19,8 +19,8 @@ driver = GraphDatabase.driver(
     connection_timeout=30,
 )
 
-WARMUP = 5
-ITERATIONS = 20
+WARMUP = 20
+ITERATIONS = 100
 
 QUERY = """
 MATCH (start:User {id: $start_id})-[:VOTED]->()-[:VOTED]->()-[:VOTED]->(n)
