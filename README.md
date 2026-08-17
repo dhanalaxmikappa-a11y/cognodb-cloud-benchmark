@@ -1,26 +1,25 @@
-﻿# CognoDB Cloud Benchmark
+# CognoDB Cloud Benchmark
 
-A Python-based benchmark project for evaluating graph data loading and traversal performance on CognoDB Cloud using the Neo4j-compatible Bolt driver.
+A Python-based benchmark project for evaluating graph database loading, traversal, lookup, aggregation, and mixed read/write performance.
+
+The project uses the **Wiki-Vote** graph dataset and compares **CognoDB Cloud** with **Neo4j** using the same dataset and benchmark workloads.
 
 ## Overview
 
-This project loads the Wiki-Vote graph dataset into CognoDB Cloud and measures database performance using different workloads.
+This project evaluates graph database performance using:
 
-The benchmark evaluates:
-
-* Full dataset loading
-* Database connectivity
-* 1-hop graph traversal
-* 2-hop graph traversal
+* Dataset loading
 * 3-hop graph traversal
-* 1,000 database operations
-* Query latency and throughput
+* Point lookup
+* Indexed lookup
+* Aggregation
+* Mixed read/write workload
+
+The same Wiki-Vote dataset was loaded into both databases.
 
 ## Dataset
 
 The benchmark uses the **Wiki-Vote** dataset.
-
-Current loaded dataset:
 
 | Metric            |   Value |
 | ----------------- | ------: |
@@ -31,45 +30,45 @@ Current loaded dataset:
 
 ## Environment
 
-* Python 3.10
-* Neo4j Python Driver 6.2.0
+* Windows / PowerShell
+* Python 3.10.11
+* Neo4j Python Driver
 * pandas
 * NumPy
 * CognoDB Cloud
-* Windows / PowerShell
+* Neo4j Cloud
 
 ## Project Structure
 
 ```text
 cognodb-cloud-benchmark/
-â”‚
-â”œâ”€â”€ data/
-â”‚   â””â”€â”€ Wiki-Vote.txt
-â”‚
-â”œâ”€â”€ docs/
-â”‚
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ benchmark.py
-â”‚   â”œâ”€â”€ 3hop_benchmark.py
-â”‚   â”œâ”€â”€ check_cognodb.py
-â”‚   â”œâ”€â”€ clear_cognodb.py
-â”‚   â”œâ”€â”€ connect.py
-â”‚   â”œâ”€â”€ dataset.py
-â”‚   â”œâ”€â”€ load_cognodb.py
-â”‚   â”œâ”€â”€ load_test.py
-â”‚   â”œâ”€â”€ lookup_benchmark.py
-â”‚   â””â”€â”€ traversal_benchmark.py
-â”‚
-â”œâ”€â”€ .env
-â”œâ”€â”€ .gitignore
-â”œâ”€â”€ requirements.txt
-â”œâ”€â”€ README.md
-â””â”€â”€ benchmark_results.csv
+│
+├── data/
+│   └── Wiki-Vote.txt
+│
+├── docs/
+│
+├── src/
+│   ├── 3hop_benchmark.py
+│   ├── aggregation_benchmark.py
+│   ├── indexed_lookup_benchmark.py
+│   ├── mixed_workload.py
+│   │
+│   ├── neo4j_traversal_benchmark.py
+│   ├── neo4j_lookup_benchmark.py
+│   ├── neo4j_indexed_lookup_benchmark.py
+│   ├── neo4j_aggregation_benchmark.py
+│   ├── neo4j_mixed_workload.py
+│   └── load_neo4j.py
+│
+├── .env
+├── .gitignore
+├── requirements.txt
+├── benchmark_results.csv
+└── README.md
 ```
 
 ## Installation
-
-Clone the repository and enter the project directory.
 
 Install the required Python packages:
 
@@ -77,17 +76,9 @@ Install the required Python packages:
 python -m pip install -r requirements.txt
 ```
 
-The required packages include:
-
-* `neo4j`
-* `pandas`
-* `numpy`
-
 ## Configuration
 
-Create a `.env` file in the project root.
-
-The database credentials are kept outside the source code.
+Database credentials are stored in `.env`.
 
 Example:
 
@@ -95,229 +86,355 @@ Example:
 COGNODB_URI=<your-cognodb-bolt-uri>
 COGNODB_USERNAME=<your-username>
 COGNODB_PASSWORD=<your-password>
+
+NEO4J_URI=<your-neo4j-uri>
+NEO4J_USERNAME=<your-username>
+NEO4J_PASSWORD=<your-password>
+NEO4J_DATABASE=<your-database>
 ```
 
 Do not commit `.env` or database credentials to Git.
 
-## Database Connection Test
+---
 
-Run:
-
-```powershell
-python src/connect.py
-```
-
-A successful connection should produce output similar to:
-
-```text
-CognoDB connection successful!
-Test query result: 1
-```
+# CognoDB Results
 
 ## Dataset Loading
 
-The full Wiki-Vote dataset can be loaded into CognoDB using:
+The Wiki-Vote dataset was successfully loaded into CognoDB.
 
-```powershell
-python src/load_cognodb.py
-```
+Dataset size:
 
-The completed full load produced:
+* Nodes: **7,115**
+* Relationships: **103,689**
 
-```text
-Nodes discovered: 7115
-Relationships processed: 103689
-Load time: 405.082 seconds
-Relationships/sec: 255.97
-```
+## 3-Hop Traversal
 
-## Verify Data
+A 100-sample benchmark was executed after warm-up iterations.
 
-Run:
+| Metric  |       Result |
+| ------- | -----------: |
+| p50     |   307.454 ms |
+| p95     | 1,365.739 ms |
+| Mean    |   468.050 ms |
+| Minimum |   269.531 ms |
+| Maximum | 2,635.521 ms |
+| Samples |          100 |
 
-```powershell
-python src/check_cognodb.py
-```
-
-Expected node count:
-
-```text
-Users currently loaded: 7115
-```
-
-## Test Load
-
-A smaller test workload can be executed using:
-
-```powershell
-python src/load_test.py
-```
-
-The test workload attempts 1,000 relationships.
-
-## Traversal Benchmark
-
-Run the 1-hop and 2-hop traversal benchmark:
-
-```powershell
-python src/traversal_benchmark.py
-```
-
-The benchmark uses warm-up iterations followed by measured iterations.
-
-### 1-Hop Results
+## Aggregation
 
 | Metric  |     Result |
 | ------- | ---------: |
-| p50     | 273.497 ms |
-| p95     | 279.897 ms |
-| Mean    | 274.479 ms |
-| Minimum | 271.711 ms |
-| Maximum | 304.852 ms |
+| p50     | 307.064 ms |
+| p95     | 357.629 ms |
+| Mean    | 312.322 ms |
+| Minimum | 281.159 ms |
+| Maximum | 791.724 ms |
 | Samples |        100 |
 
-### 2-Hop Results
+Users counted: **7,115**
+
+## Indexed Point Lookup
+
+A `User.id` range index was created and verified before the benchmark.
+
+Index:
+
+```text
+user_id_index
+Label: User
+Property: id
+Type: RANGE
+State: ONLINE
+```
 
 | Metric  |     Result |
 | ------- | ---------: |
-| p50     | 274.266 ms |
-| p95     | 297.278 ms |
-| Mean    | 278.025 ms |
-| Minimum | 271.537 ms |
-| Maximum | 350.004 ms |
+| p50     | 307.197 ms |
+| p95     | 341.566 ms |
+| Mean    | 306.156 ms |
+| Minimum | 271.074 ms |
+| Maximum | 376.909 ms |
 | Samples |        100 |
 
-## 3-Hop Benchmark
+## Mixed Read/Write Workload
 
-Run:
+Configuration:
 
-```powershell
-python src/3hop_benchmark.py
-```
+* Concurrency: 10
+* Duration: 30 seconds
+* Reads: 80%
+* Writes: 20%
 
-A successful 20-sample run produced:
+| Metric                |        Result |
+| --------------------- | ------------: |
+| Successful operations |           934 |
+| Failed operations     |             0 |
+| Throughput            | 31.02 ops/sec |
+| Average latency       |    321.338 ms |
+| Minimum latency       |    261.825 ms |
+| Maximum latency       |  3,673.694 ms |
 
-| Metric  |      Result |
-| ------- | ----------: |
-| p50     |  322.298 ms |
-| p95     | 1357.704 ms |
-| Mean    |  604.679 ms |
-| Minimum |  273.324 ms |
-| Maximum | 2632.178 ms |
-| Samples |          20 |
+---
 
-The 3-hop workload showed substantially higher tail latency than the 1-hop and 2-hop workloads.
+# Neo4j Results
 
-The large difference between p50 and p95 indicates that some graph traversals can become significantly more expensive depending on the starting node and traversal fan-out.
+The same dataset was loaded into Neo4j.
 
-## 1,000 Operation Benchmark
+## Dataset Loading
 
-Run:
+| Metric                  |                     Result |
+| ----------------------- | -------------------------: |
+| Nodes                   |                      7,115 |
+| Relationships           |                    103,689 |
+| Load time               |             12.025 seconds |
+| Relationship throughput | 8,622.73 relationships/sec |
 
-```powershell
-python src/benchmark.py
-```
+## 3-Hop Traversal
 
-A recent benchmark run produced:
+100 samples were measured after warm-up.
 
-```text
-Operations: 1000
-Execution time: 282.699 seconds
-Average latency: 282.699 ms
-Operations/sec: 3.54
-```
+| Metric  |     Result |
+| ------- | ---------: |
+| p50     |  55.080 ms |
+| p95     |  65.798 ms |
+| Mean    |  59.830 ms |
+| Minimum |  52.945 ms |
+| Maximum | 373.381 ms |
+| Samples |        100 |
 
-An earlier run produced:
+## Point Lookup
 
-```text
-Operations: 1000
-Execution time: 264.314 seconds
-Average latency: 264.314 ms
-Operations/sec: 3.78
-```
+| Metric  |    Result |
+| ------- | --------: |
+| p50     | 51.278 ms |
+| p95     | 54.632 ms |
+| Mean    | 51.665 ms |
+| Minimum | 49.743 ms |
+| Maximum | 60.541 ms |
+| Samples |       100 |
 
-The difference between runs demonstrates normal variability in cloud database latency.
+## Indexed Point Lookup
 
-## Performance Summary
+The Neo4j `User.id` index was verified as online before testing.
 
-| Workload                   |               Key Result |
-| -------------------------- | -----------------------: |
-| Full dataset load          |              405.082 sec |
-| Load throughput            | 255.97 relationships/sec |
-| 1-hop p50                  |               273.497 ms |
-| 2-hop p50                  |               274.266 ms |
-| 3-hop p50                  |               322.298 ms |
-| 3-hop p95                  |              1357.704 ms |
-| 1,000-operation throughput |             3.54 ops/sec |
+| Metric  |    Result |
+| ------- | --------: |
+| p50     | 52.920 ms |
+| p95     | 56.082 ms |
+| Mean    | 53.407 ms |
+| Minimum | 51.383 ms |
+| Maximum | 69.224 ms |
+| Samples |       100 |
+
+## Aggregation
+
+| Metric  |    Result |
+| ------- | --------: |
+| p50     | 49.785 ms |
+| p95     | 53.217 ms |
+| Mean    | 50.251 ms |
+| Minimum | 48.665 ms |
+| Maximum | 59.490 ms |
+| Samples |       100 |
+
+Users counted: **7,115**
+
+## Mixed Read/Write Workload
+
+Configuration:
+
+* Concurrency: 10
+* Duration: 30 seconds
+* Reads: 80%
+* Writes: 20%
+
+| Metric                |         Result |
+| --------------------- | -------------: |
+| Successful operations |          5,121 |
+| Failed operations     |              0 |
+| Throughput            | 170.30 ops/sec |
+| Average latency       |      58.627 ms |
+| Minimum latency       |      49.876 ms |
+| Maximum latency       |     369.238 ms |
+
+---
+
+# Performance Comparison
+
+The following table compares the final measured results from the two databases.
+
+| Workload           |       CognoDB |              Neo4j |
+| ------------------ | ------------: | -----------------: |
+| 3-hop p50          |    307.454 ms |      **55.080 ms** |
+| 3-hop p95          |  1,365.739 ms |      **65.798 ms** |
+| Point lookup p50   |       ~307 ms |      **51.278 ms** |
+| Indexed lookup p50 |    307.197 ms |      **52.920 ms** |
+| Aggregation p50    |    307.064 ms |      **49.785 ms** |
+| Mixed throughput   | 31.02 ops/sec | **170.30 ops/sec** |
 
 ## Observations
 
-### Dataset Loading
+### Graph Traversal
 
-The full dataset contains 7,115 users and 103,689 relationships. The database successfully loaded the complete graph.
+Neo4j produced substantially lower latency for the tested 3-hop traversal workload.
 
-### 1-Hop vs 2-Hop
+The measured p50 was approximately:
 
-The measured p50 latency for 1-hop and 2-hop traversals was very similar:
+* CognoDB: **307.454 ms**
+* Neo4j: **55.080 ms**
 
-* 1-hop: 273.497 ms
-* 2-hop: 274.266 ms
+The p95 values were:
 
-This indicates that the additional traversal depth did not significantly increase median latency for these workloads.
+* CognoDB: **1,365.739 ms**
+* Neo4j: **65.798 ms**
 
-### 3-Hop Traversal
+This indicates significantly lower median and tail latency for Neo4j under this workload.
 
-The 3-hop benchmark showed a higher median latency and substantially higher tail latency.
+### Point Lookup
 
-The p95 latency was approximately 1.36 seconds, while the maximum observed latency was approximately 2.63 seconds.
+Neo4j also showed substantially lower point-lookup latency.
 
-This suggests that graph fan-out and traversal complexity can have a significant impact on individual query latency.
+The measured p50 was approximately:
 
-### Cloud Variability
+* CognoDB: **307 ms**
+* Neo4j: **51.278 ms**
 
-The 1,000-operation benchmark produced:
+### Indexed Lookup
 
-* 3.78 ops/sec in one run
-* 3.54 ops/sec in another run
+Both databases were tested with a `User.id` index.
 
-Cloud database workloads can vary between runs because of network conditions, database load, caching, and resource scheduling.
+Neo4j produced a p50 of **52.920 ms**, while the CognoDB benchmark produced approximately **307.197 ms**.
 
-## Reproducibility
+### Aggregation
 
-A typical benchmark workflow is:
+The aggregation benchmark counted the same **7,115 users**.
+
+Measured p50:
+
+* CognoDB: **307.064 ms**
+* Neo4j: **49.785 ms**
+
+### Mixed Workload
+
+Both databases were tested using:
+
+* 10 concurrent workers
+* 30-second duration
+* 80% reads
+* 20% writes
+
+Neo4j achieved:
+
+**170.30 ops/sec**
+
+CognoDB achieved:
+
+**31.02 ops/sec**
+
+Both tests reported **0 failed operations**.
+
+---
+
+# Methodology
+
+The benchmarks use warm-up iterations before measured iterations to reduce the effect of initial connection and cache setup.
+
+Unless otherwise specified:
+
+* Warm-up iterations: 20
+* Measured iterations: 100
+* Random seed: 42 where applicable
+
+The same Wiki-Vote dataset was used for both databases.
+
+The benchmark results represent measurements from the tested cloud environments and should not be interpreted as universal performance guarantees.
+
+Cloud latency can vary because of:
+
+* Network conditions
+* Database load
+* Resource scheduling
+* Caching
+* Region and infrastructure differences
+
+## Important Comparison Note
+
+The CognoDB and Neo4j instances were cloud services and may have different infrastructure, resource allocations, regions, and network paths.
+
+Therefore, these results should be interpreted as **observed benchmark results under the tested configurations**, rather than as a controlled hardware-identical comparison.
+
+---
+
+# Reproducibility
+
+Install dependencies:
 
 ```powershell
 python -m pip install -r requirements.txt
-python src/connect.py
-python src/load_cognodb.py
-python src/check_cognodb.py
-python src/traversal_benchmark.py
-python src/3hop_benchmark.py
-python src/benchmark.py
 ```
 
-The benchmark uses deterministic random selection where applicable, including a fixed random seed for traversal workloads.
+Check CognoDB:
 
-## Security
+```powershell
+python src/check_cognodb.py
+```
 
-Database credentials are stored in `.env`.
+Run CognoDB benchmarks:
 
-The `.env` file is excluded from Git using `.gitignore`.
+```powershell
+python src/3hop_benchmark.py
+python src/indexed_lookup_benchmark.py
+python src/aggregation_benchmark.py
+python src/mixed_workload.py
+```
 
-The Wiki-Vote dataset and generated benchmark results are also excluded from version control where appropriate.
+Load the dataset into Neo4j:
 
-## Conclusion
+```powershell
+python src/load_neo4j.py
+```
 
-This benchmark demonstrates a working CognoDB Cloud graph workload using a Neo4j-compatible Python driver.
+Run Neo4j benchmarks:
 
-The database successfully handled:
+```powershell
+python src/neo4j_traversal_benchmark.py
+python src/neo4j_lookup_benchmark.py
+python src/neo4j_indexed_lookup_benchmark.py
+python src/neo4j_aggregation_benchmark.py
+python src/neo4j_mixed_workload.py
+```
 
-* Full Wiki-Vote dataset loading
-* More than 100,000 graph relationships
-* Multi-hop graph traversals
-* Repeated benchmark workloads
+---
 
-Median traversal latency remained around the 270â€“320 ms range for the tested workloads, while deeper 3-hop traversals showed significantly higher tail latency.
+# Security
 
-The benchmark provides a reproducible baseline for further performance optimization and comparison.
+Database credentials must remain in `.env`.
 
+The `.env` file should be excluded using `.gitignore`.
+
+Never publish:
+
+* Database passwords
+* API keys
+* Private connection strings containing credentials
+* Authentication tokens
+
+---
+
+# Conclusion
+
+This project establishes a reproducible graph database benchmark using the Wiki-Vote dataset with **7,115 nodes and 103,689 relationships**.
+
+The completed experiments cover:
+
+* Dataset loading
+* Multi-hop graph traversal
+* Point lookup
+* Indexed lookup
+* Aggregation
+* Mixed read/write workloads
+
+Under the tested configurations, Neo4j produced lower latency and higher mixed-workload throughput than CognoDB.
+
+The project can be extended by adding additional graph database systems using the same dataset and workload definitions.
