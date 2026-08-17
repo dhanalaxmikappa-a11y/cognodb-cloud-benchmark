@@ -1,2 +1,5 @@
+.env
 __pycache__/
 *.pyc
+data/Wiki-Vote.txt
+benchmark_results.csv
