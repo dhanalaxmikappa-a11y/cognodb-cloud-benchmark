@@ -1,0 +1,3 @@
+OPERATIONS = 1000
+WARMUP_OPERATIONS = 100
+OUTPUT_FILE = "benchmark_results.csv"
